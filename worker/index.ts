@@ -59,13 +59,12 @@ export default {
     }
 
     const anthropicResponse = await fetch(`https://api.anthropic.com${url.pathname}`, fetchOptions)
-    const responseBody = await anthropicResponse.text()
 
-    return new Response(responseBody, {
+    return new Response(anthropicResponse.body, {
       status: anthropicResponse.status,
       headers: {
         ...corsHeaders(origin),
-        'Content-Type': 'application/json',
+        'Content-Type': anthropicResponse.headers.get('Content-Type') || 'application/json',
       },
     })
   },
