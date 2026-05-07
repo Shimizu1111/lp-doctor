@@ -61,6 +61,22 @@ label {
   color: var(--text);
 }
 
+select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  outline: none;
+  background: white;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+select:focus {
+  border-color: var(--primary);
+}
+
 input[type="text"],
 input[type="password"],
 input[type="url"] {
@@ -365,6 +381,74 @@ input:focus {
   color: #16a34a;
 }
 
+.improvement-label--copy {
+  background: #faf5ff;
+  color: #7c3aed;
+}
+
+.improvement-label--steps {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.improvement-label--impact {
+  background: #fefce8;
+  color: #a16207;
+}
+
+.copy-example {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.copy-example-item {
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+.copy-example-item p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--text);
+}
+
+.copy-example-before {
+  background: #fef2f2;
+  border-left: 3px solid var(--danger);
+}
+
+.copy-example-after {
+  background: #f0fdf4;
+  border-left: 3px solid #16a34a;
+}
+
+.copy-example-tag {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+  color: var(--text-muted);
+}
+
+.improvement-steps {
+  margin: 0.25rem 0 0;
+  padding-left: 1.25rem;
+  font-size: 0.9rem;
+  line-height: 1.8;
+  color: var(--text);
+}
+
+.improvement-steps li {
+  margin-bottom: 0.25rem;
+}
+
 .multiple-images {
   display: flex;
   gap: 0.5rem;
@@ -382,6 +466,109 @@ input:focus {
 
 .multiple-images .remove-thumb {
   position: relative;
+}
+
+/* Claude Code Prompt Block */
+.improvement-label--prompt {
+  background: #1e293b;
+  color: #e2e8f0;
+}
+
+.prompt-block {
+  position: relative;
+  margin-top: 0.25rem;
+  background: #1e293b;
+  border-radius: 8px;
+  padding: 1rem;
+  overflow: hidden;
+}
+
+.prompt-block pre {
+  font-family: 'SF Mono', 'Fira Code', 'Fira Mono', monospace;
+  font-size: 0.85rem;
+  line-height: 1.7;
+  color: #e2e8f0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+}
+
+.copy-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.copy-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Strategic Advice */
+.strategic-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+.strategic-item {
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.strategic-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.strategic-item:first-child {
+  padding-top: 0;
+}
+
+.strategic-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.strategic-description {
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--text);
+  margin-bottom: 0.75rem;
+}
+
+.strategic-questions {
+  background: #faf5ff;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+}
+
+.strategic-questions-label {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #7c3aed;
+  margin-bottom: 0.5rem;
+}
+
+.strategic-questions ul {
+  margin: 0;
+  padding-left: 1.25rem;
+  font-size: 0.85rem;
+  line-height: 1.8;
+  color: var(--text);
+}
+
+.strategic-questions li {
+  margin-bottom: 0.25rem;
 }
 
 .multiple-images .remove-btn {

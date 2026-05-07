@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { diagnoseLP, captureScreenshot, type DiagnosisResult } from './api'
+import { diagnoseLP, captureScreenshot, fetchModels, type DiagnosisResult, type ModelOption } from './api'
 
 type InputMode = 'upload' | 'url'
 type AppState = 'input' | 'loading' | 'result'
@@ -20,6 +20,9 @@ function getBarColor(score: number, max: number): string {
 export default function App() {
   const [apiKey, setApiKey] = useState(() => localStorage.getItem('lp-doctor-api-key') || '')
   const [keySaved, setKeySaved] = useState(() => !!localStorage.getItem('lp-doctor-api-key'))
+  const [model, setModel] = useState(() => localStorage.getItem('lp-doctor-model') || '')
+  const [models, setModels] = useState<ModelOption[]>([])
+  const [modelsLoading, setModelsLoading] = useState(false)
   const [inputMode, setInputMode] = useState<InputMode>('upload')
   const [images, setImages] = useState<string[]>([])
   const [url, setUrl] = useState('')
@@ -34,13 +37,30 @@ export default function App() {
     if (saved) {
       setApiKey(saved)
       setKeySaved(true)
+      loadModels(saved)
     }
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const loadModels = useCallback(async (key: string) => {
+    setModelsLoading(true)
+    try {
+      const fetched = await fetchModels(key)
+      setModels(fetched)
+      if (!model && fetched.length > 0) {
+        setModel(fetched[0].id)
+      }
+    } catch {
+      setModels([])
+    } finally {
+      setModelsLoading(false)
+    }
+  }, [model])
 
   const saveApiKey = () => {
     if (apiKey.trim()) {
       localStorage.setItem('lp-doctor-api-key', apiKey.trim())
       setKeySaved(true)
+      loadModels(apiKey.trim())
     }
   }
 
@@ -77,6 +97,11 @@ export default function App() {
       return
     }
 
+    if (!model) {
+      setError('使用モデルを選択してください（APIキーを保存するとモデル一覧が取得されます）')
+      return
+    }
+
     let imagesToAnalyze = images
 
     if (inputMode === 'url') {
@@ -102,7 +127,7 @@ export default function App() {
     }
 
     try {
-      const diagnosis = await diagnoseLP(apiKey.trim(), imagesToAnalyze)
+      const diagnosis = await diagnoseLP(apiKey.trim(), imagesToAnalyze, model)
       setResult(diagnosis)
       setAppState('result')
     } catch (e) {
@@ -156,6 +181,28 @@ export default function App() {
               </button>
             </div>
             {keySaved && <div className="saved-badge">保存済み（ブラウザに保存）</div>}
+            {models.length > 0 && (
+              <div style={{ marginTop: '1rem' }}>
+                <label htmlFor="model-select">使用モデル</label>
+                <select
+                  id="model-select"
+                  value={model}
+                  onChange={(e) => {
+                    setModel(e.target.value)
+                    localStorage.setItem('lp-doctor-model', e.target.value)
+                  }}
+                >
+                  {models.map((opt) => (
+                    <option key={opt.id} value={opt.id}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {modelsLoading && (
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+                モデル一覧を取得中...
+              </p>
+            )}
           </div>
 
           {/* Input Mode */}
@@ -286,15 +333,85 @@ export default function App() {
                       <span className="improvement-label improvement-label--current">現状の問題</span>
                       <p>{imp.current}</p>
                     </div>
+                    {imp.copyExample && (
+                      <div className="improvement-section">
+                        <span className="improvement-label improvement-label--copy">Before / After</span>
+                        <div className="copy-example">
+                          <div className="copy-example-item copy-example-before">
+                            <span className="copy-example-tag">Before</span>
+                            <p>{imp.copyExample.before}</p>
+                          </div>
+                          <div className="copy-example-item copy-example-after">
+                            <span className="copy-example-tag">After</span>
+                            <p>{imp.copyExample.after}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                     <div className="improvement-section">
                       <span className="improvement-label improvement-label--action">具体的な改善アクション</span>
                       <p>{imp.action}</p>
                     </div>
+                    {imp.steps && imp.steps.length > 0 && (
+                      <div className="improvement-section">
+                        <span className="improvement-label improvement-label--steps">実装ステップ</span>
+                        <ol className="improvement-steps">
+                          {imp.steps.map((step, j) => (
+                            <li key={j}>{step}</li>
+                          ))}
+                        </ol>
+                      </div>
+                    )}
+                    {imp.expectedImpact && (
+                      <div className="improvement-section">
+                        <span className="improvement-label improvement-label--impact">期待される効果</span>
+                        <p>{imp.expectedImpact}</p>
+                      </div>
+                    )}
                     <div className="improvement-section">
                       <span className="improvement-label improvement-label--reason">なぜ効くのか</span>
                       <p>{imp.reason}</p>
                     </div>
+                    {imp.claudeCodePrompt && (
+                      <div className="improvement-section">
+                        <span className="improvement-label improvement-label--prompt">Claude Code 指示文</span>
+                        <div className="prompt-block">
+                          <pre>{imp.claudeCodePrompt}</pre>
+                          <button
+                            className="copy-btn"
+                            onClick={() => {
+                              navigator.clipboard.writeText(imp.claudeCodePrompt)
+                            }}
+                          >
+                            コピー
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {result.strategicAdvice && result.strategicAdvice.length > 0 && (
+            <div className="card">
+              <h2>戦略アドバイス</h2>
+              <p className="strategic-subtitle">LP改善の前に決めておくべきこと</p>
+              {result.strategicAdvice.map((advice, i) => (
+                <div key={i} className="strategic-item">
+                  <h3 className="strategic-title">{advice.title}</h3>
+                  <p className="strategic-description">{advice.description}</p>
+                  {advice.questions && advice.questions.length > 0 && (
+                    <div className="strategic-questions">
+                      <span className="strategic-questions-label">自問すべき問い</span>
+                      <ul>
+                        {advice.questions.map((q, j) => (
+                          <li key={j}>{q}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
