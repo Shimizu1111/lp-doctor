@@ -186,6 +186,8 @@ export async function diagnoseLP(
   images: string[],
   model: string,
 ): Promise<DiagnosisResult> {
+  const t0 = performance.now()
+
   const imageContent = images.map((img) => ({
     type: 'image' as const,
     source: {
@@ -195,6 +197,30 @@ export async function diagnoseLP(
     },
   }))
 
+  const totalImageBytes = imageContent.reduce((sum, img) => sum + img.source.data.length, 0)
+  const systemPromptBytes = new Blob([SYSTEM_PROMPT]).size
+  const userPromptBytes = new Blob([USER_PROMPT]).size
+  console.log(`[diagnoseLP] 画像数: ${images.length}, 画像合計: ${(totalImageBytes / 1024).toFixed(0)}KB, システムプロンプト: ${(systemPromptBytes / 1024).toFixed(1)}KB, ユーザープロンプト: ${(userPromptBytes / 1024).toFixed(1)}KB`)
+
+  const body = JSON.stringify({
+    model,
+    max_tokens: 8192,
+    system: SYSTEM_PROMPT,
+    messages: [
+      {
+        role: 'user',
+        content: [
+          ...imageContent,
+          { type: 'text', text: USER_PROMPT },
+        ],
+      },
+    ],
+  })
+  console.log(`[diagnoseLP] リクエストbody合計: ${(body.length / 1024).toFixed(0)}KB`)
+
+  const t1 = performance.now()
+  console.log(`[diagnoseLP] リクエスト構築: ${(t1 - t0).toFixed(0)}ms`)
+
   const response = await fetch(`${PROXY_BASE}/v1/messages`, {
     method: 'POST',
     headers: {
@@ -202,21 +228,11 @@ export async function diagnoseLP(
       'x-api-key': apiKey,
       'anthropic-version': '2023-06-01',
     },
-    body: JSON.stringify({
-      model,
-      max_tokens: 8192,
-      system: SYSTEM_PROMPT,
-      messages: [
-        {
-          role: 'user',
-          content: [
-            ...imageContent,
-            { type: 'text', text: USER_PROMPT },
-          ],
-        },
-      ],
-    }),
+    body,
   })
+
+  const t2 = performance.now()
+  console.log(`[diagnoseLP] API応答待ち: ${(t2 - t1).toFixed(0)}ms (${((t2 - t1) / 1000).toFixed(1)}秒)`)
 
   if (!response.ok) {
     const err = await response.json()
@@ -224,7 +240,17 @@ export async function diagnoseLP(
   }
 
   const data = await response.json()
+  const t3 = performance.now()
+  console.log(`[diagnoseLP] レスポンスparse: ${(t3 - t2).toFixed(0)}ms`)
+
+  const usage = data.usage
+  if (usage) {
+    console.log(`[diagnoseLP] トークン使用量 - input: ${usage.input_tokens}, output: ${usage.output_tokens}`)
+  }
+
   const text = data.content[0].text
+  console.log(`[diagnoseLP] レスポンステキスト長: ${text.length}文字`)
+  console.log(`[diagnoseLP] 合計所要時間: ${((t3 - t0) / 1000).toFixed(1)}秒`)
 
   const jsonMatch = text.match(/\{[\s\S]*\}/)
   if (!jsonMatch) {
@@ -235,17 +261,28 @@ export async function diagnoseLP(
 }
 
 export async function captureScreenshot(url: string): Promise<string> {
+  const t0 = performance.now()
+  console.log(`[captureScreenshot] 取得開始: ${url}`)
+
   const screenshotUrl = `https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=true&meta=false&embed=screenshot.url`
 
   const response = await fetch(screenshotUrl)
+  const t1 = performance.now()
+  console.log(`[captureScreenshot] API応答: ${(t1 - t0).toFixed(0)}ms (${((t1 - t0) / 1000).toFixed(1)}秒)`)
+
   if (!response.ok) {
     throw new Error('スクリーンショットの取得に失敗しました')
   }
 
   const blob = await response.blob()
+  console.log(`[captureScreenshot] 画像サイズ: ${(blob.size / 1024).toFixed(0)}KB`)
+
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
-    reader.onload = () => resolve(reader.result as string)
+    reader.onload = () => {
+      console.log(`[captureScreenshot] 合計: ${((performance.now() - t0) / 1000).toFixed(1)}秒`)
+      resolve(reader.result as string)
+    }
     reader.onerror = reject
     reader.readAsDataURL(blob)
   })
