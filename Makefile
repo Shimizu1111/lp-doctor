@@ -14,6 +14,20 @@ deploy-worker:
 
 # GitHub Pages デプロイ (push で自動デプロイ)
 deploy-pages:
+	@if [ -n "$$(git status --porcelain)" ]; then \
+		echo ""; \
+		echo "未コミットの変更があります:"; \
+		git status --short; \
+		echo ""; \
+		read -p "コミットしてからpushしますか？ (y/N): " ans; \
+		if [ "$$ans" = "y" ] || [ "$$ans" = "Y" ]; then \
+			read -p "コミットメッセージ: " msg; \
+			git add -A && git commit -m "$$msg"; \
+		else \
+			echo "pushをスキップしました"; \
+			exit 0; \
+		fi; \
+	fi
 	git push
 
 # 全部デプロイ (Worker + Pages)
