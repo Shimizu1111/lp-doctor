@@ -4,11 +4,13 @@ const ALLOWED_ORIGINS = [
   'http://localhost:5174',
 ]
 
+const ALLOWED_PATHS = ['/v1/messages', '/v1/models']
+
 function corsHeaders(origin: string): Record<string, string> {
   const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0]
   return {
     'Access-Control-Allow-Origin': allowedOrigin,
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, x-api-key, anthropic-version, anthropic-dangerous-direct-browser-access',
     'Access-Control-Max-Age': '86400',
   }
@@ -22,12 +24,8 @@ export default {
       return new Response(null, { status: 204, headers: corsHeaders(origin) })
     }
 
-    if (request.method !== 'POST') {
-      return new Response('Method not allowed', { status: 405 })
-    }
-
     const url = new URL(request.url)
-    if (url.pathname !== '/v1/messages') {
+    if (!ALLOWED_PATHS.includes(url.pathname)) {
       return new Response('Not found', { status: 404 })
     }
 
@@ -39,18 +37,28 @@ export default {
       })
     }
 
-    const body = await request.text()
+    // /v1/models は GET、/v1/messages は POST
+    if (url.pathname === '/v1/models' && request.method !== 'GET') {
+      return new Response('Method not allowed', { status: 405 })
+    }
+    if (url.pathname === '/v1/messages' && request.method !== 'POST') {
+      return new Response('Method not allowed', { status: 405 })
+    }
 
-    const anthropicResponse = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
+    const fetchOptions: RequestInit = {
+      method: request.method,
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': apiKey,
         'anthropic-version': '2023-06-01',
       },
-      body,
-    })
+    }
 
+    if (request.method === 'POST') {
+      fetchOptions.body = await request.text()
+    }
+
+    const anthropicResponse = await fetch(`https://api.anthropic.com${url.pathname}`, fetchOptions)
     const responseBody = await anthropicResponse.text()
 
     return new Response(responseBody, {
