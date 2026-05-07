@@ -204,7 +204,7 @@ export async function diagnoseLP(
 
   const body = JSON.stringify({
     model,
-    max_tokens: 8192,
+    max_tokens: 16384,
     system: SYSTEM_PROMPT,
     messages: [
       {
@@ -246,6 +246,10 @@ export async function diagnoseLP(
   const usage = data.usage
   if (usage) {
     console.log(`[diagnoseLP] トークン使用量 - input: ${usage.input_tokens}, output: ${usage.output_tokens}`)
+  }
+
+  if (data.stop_reason === 'max_tokens') {
+    throw new Error('診断結果の生成が途中で打ち切られました。出力トークン数の上限に達したため、完全な結果を取得できませんでした。')
   }
 
   const text = data.content[0].text
