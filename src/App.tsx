@@ -352,16 +352,6 @@ export default function App() {
                       <span className="improvement-label improvement-label--action">具体的な改善アクション</span>
                       <p>{imp.action}</p>
                     </div>
-                    {imp.steps && imp.steps.length > 0 && (
-                      <div className="improvement-section">
-                        <span className="improvement-label improvement-label--steps">実装ステップ</span>
-                        <ol className="improvement-steps">
-                          {imp.steps.map((step, j) => (
-                            <li key={j}>{step}</li>
-                          ))}
-                        </ol>
-                      </div>
-                    )}
                     {imp.expectedImpact && (
                       <div className="improvement-section">
                         <span className="improvement-label improvement-label--impact">期待される効果</span>

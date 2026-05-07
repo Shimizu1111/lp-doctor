@@ -386,11 +386,6 @@ input:focus {
   color: #7c3aed;
 }
 
-.improvement-label--steps {
-  background: #fff7ed;
-  color: #c2410c;
-}
-
 .improvement-label--impact {
   background: #fefce8;
   color: #a16207;
@@ -435,18 +430,6 @@ input:focus {
   letter-spacing: 0.05em;
   margin-bottom: 0.25rem;
   color: var(--text-muted);
-}
-
-.improvement-steps {
-  margin: 0.25rem 0 0;
-  padding-left: 1.25rem;
-  font-size: 0.9rem;
-  line-height: 1.8;
-  color: var(--text);
-}
-
-.improvement-steps li {
-  margin-bottom: 0.25rem;
 }
 
 .multiple-images {
