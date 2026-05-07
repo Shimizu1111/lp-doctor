@@ -284,6 +284,87 @@ input:focus {
   background: #eff6ff;
 }
 
+/* Improvements */
+.improvement-item {
+  display: flex;
+  gap: 1rem;
+  padding: 1.25rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.improvement-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.improvement-item:first-child {
+  padding-top: 0;
+}
+
+.improvement-number {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.improvement-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.improvement-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
+.improvement-section {
+  margin-bottom: 0.5rem;
+}
+
+.improvement-section:last-child {
+  margin-bottom: 0;
+}
+
+.improvement-section p {
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--text);
+}
+
+.improvement-label {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.125rem 0.5rem;
+  border-radius: 4px;
+  margin-bottom: 0.25rem;
+}
+
+.improvement-label--current {
+  background: #fef2f2;
+  color: var(--danger);
+}
+
+.improvement-label--action {
+  background: #eff6ff;
+  color: var(--primary);
+}
+
+.improvement-label--reason {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
 .multiple-images {
   display: flex;
   gap: 0.5rem;

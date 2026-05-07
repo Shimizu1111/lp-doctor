@@ -277,13 +277,26 @@ export default function App() {
           {result.topImprovements.length > 0 && (
             <div className="card">
               <h2>優先改善ポイント TOP3</h2>
-              <ol style={{ paddingLeft: '1.25rem' }}>
-                {result.topImprovements.map((imp, i) => (
-                  <li key={i} style={{ marginBottom: '0.5rem', fontSize: '0.95rem' }}>
-                    {imp}
-                  </li>
-                ))}
-              </ol>
+              {result.topImprovements.map((imp, i) => (
+                <div key={i} className="improvement-item">
+                  <div className="improvement-number">{i + 1}</div>
+                  <div className="improvement-body">
+                    <h3 className="improvement-title">{imp.title}</h3>
+                    <div className="improvement-section">
+                      <span className="improvement-label improvement-label--current">現状の問題</span>
+                      <p>{imp.current}</p>
+                    </div>
+                    <div className="improvement-section">
+                      <span className="improvement-label improvement-label--action">具体的な改善アクション</span>
+                      <p>{imp.action}</p>
+                    </div>
+                    <div className="improvement-section">
+                      <span className="improvement-label improvement-label--reason">なぜ効くのか</span>
+                      <p>{imp.reason}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
 

@@ -1,45 +1,30 @@
-const EVALUATION_PROMPT = `あなたはLP（ランディングページ）専門のコンサルタントです。
+import rubric01 from '../docs/rubrics/01-first-view.md?raw'
+import rubric02 from '../docs/rubrics/02-story-structure.md?raw'
+import rubric03 from '../docs/rubrics/03-copywriting.md?raw'
+import rubric04 from '../docs/rubrics/04-trust-proof.md?raw'
+import rubric05 from '../docs/rubrics/05-cta-conversion.md?raw'
+import rubric06 from '../docs/rubrics/06-design-ux.md?raw'
+
+const RUBRICS = [rubric01, rubric02, rubric03, rubric04, rubric05, rubric06].join('\n\n---\n\n')
+
+const SYSTEM_PROMPT = `あなたはLP（ランディングページ）専門のコンサルタントです。
 数百のLPを改善してきた実績があり、コンバージョン率最適化（CRO）の専門家です。
 
-以下のLPのスクリーンショットを分析し、プロのコンサルタントとして診断してください。
+以下に、LP評価のための詳細なルーブリック（採点基準）を提示します。
+各カテゴリの採点は、このルーブリックのスコア段階定義とチェックリストに**厳密に基づいて**行ってください。
+ルーブリックに記載されたGood/Badパターンや業界ベンチマークも判断の根拠として活用してください。
 
-## 評価カテゴリと観点
+=== ルーブリック ===
+${RUBRICS}
+=== ルーブリック終了 ===`
 
-1. **ファーストビュー** (配点: 20点)
-   - キャッチコピーは明確でベネフィットが伝わるか
-   - 3秒以内に「何のページか」「自分に関係あるか」が判断できるか
-   - メインビジュアルは訴求力があるか
-   - CTAがファーストビュー内にあるか
+const USER_PROMPT = `上記のルーブリックに厳密に基づいて、このLPのスクリーンショットを診断してください。
 
-2. **構成・ストーリー設計** (配点: 20点)
-   - PASONA/AIDCA等の実績ある構成パターンに沿っているか
-   - 読み手の心理フローに合った情報順序か（問題提起→共感→解決策→証拠→行動）
-   - 各セクションの役割が明確か
-   - 離脱ポイントはないか
-
-3. **コピーライティング** (配点: 20点)
-   - ターゲットが明確に絞られているか
-   - ベネフィットが具体的に書かれているか（数字・事例）
-   - 「特徴」ではなく「顧客にとっての価値」で語られているか
-   - 専門用語が多すぎないか
-
-4. **信頼性・社会的証明** (配点: 15点)
-   - お客様の声・事例があるか（具体的か）
-   - 実績数字・メディア掲載・受賞歴があるか
-   - 運営者・会社情報は明示されているか
-   - 権威性の裏付けがあるか
-
-5. **CTA設計** (配点: 15点)
-   - CTAの文言は行動を促す具体的な表現か（「送信」ではなく価値を示す）
-   - CTAの配置・回数は適切か
-   - 心理的ハードルを下げる工夫があるか（無料、簡単、リスクなし等）
-   - 緊急性・限定性の演出があるか
-
-6. **デザイン・視認性** (配点: 10点)
-   - 読みやすさ（フォント、余白、行間）
-   - 色使いとコントラスト（CTAが目立つか）
-   - 情報の優先順位がデザインで表現されているか
-   - モバイル対応は考慮されていそうか
+## 採点プロセス
+1. まず各カテゴリのチェックリストを1項目ずつ確認する
+2. チェック結果をスコア段階定義に照合し、該当する段階のスコアを付ける
+3. 段階の中間値ではなく、チェック結果の合致度に応じて段階内で細かく調整する
+4. 各カテゴリのcommentには、チェックリストのどの項目が満たされ/不足しているかを具体的に記述する
 
 ## 出力フォーマット
 
@@ -50,46 +35,61 @@ const EVALUATION_PROMPT = `あなたはLP（ランディングページ）専門
   "overallComment": "<総合評価コメント（2-3文）>",
   "categories": [
     {
-      "name": "ファーストビュー",
+      "name": "ファーストビュー & ヒーローセクション",
       "score": <0-20>,
       "maxScore": 20,
-      "comment": "<この項目の評価コメントと具体的な改善提案>"
+      "comment": "<ルーブリックのどの基準に照合してこのスコアになったか、具体的に記述>"
     },
     {
-      "name": "構成・ストーリー設計",
-      "score": <0-20>,
-      "maxScore": 20,
-      "comment": "<この項目の評価コメントと具体的な改善提案>"
-    },
-    {
-      "name": "コピーライティング",
-      "score": <0-20>,
-      "maxScore": 20,
-      "comment": "<この項目の評価コメントと具体的な改善提案>"
-    },
-    {
-      "name": "信頼性・社会的証明",
+      "name": "ストーリー構成 & 情報設計",
       "score": <0-15>,
       "maxScore": 15,
-      "comment": "<この項目の評価コメントと具体的な改善提案>"
+      "comment": "<ルーブリックのどの基準に照合してこのスコアになったか、具体的に記述>"
     },
     {
-      "name": "CTA設計",
-      "score": <0-15>,
-      "maxScore": 15,
-      "comment": "<この項目の評価コメントと具体的な改善提案>"
+      "name": "コピーライティング & メッセージング",
+      "score": <0-20>,
+      "maxScore": 20,
+      "comment": "<ルーブリックのどの基準に照合してこのスコアになったか、具体的に記述>"
     },
     {
-      "name": "デザイン・視認性",
+      "name": "信頼性 & 社会的証明",
       "score": <0-10>,
       "maxScore": 10,
-      "comment": "<この項目の評価コメントと具体的な改善提案>"
+      "comment": "<ルーブリックのどの基準に照合してこのスコアになったか、具体的に記述>"
+    },
+    {
+      "name": "CTA & コンバージョン設計",
+      "score": <0-20>,
+      "maxScore": 20,
+      "comment": "<ルーブリックのどの基準に照合してこのスコアになったか、具体的に記述>"
+    },
+    {
+      "name": "ビジュアルデザイン & UX",
+      "score": <0-15>,
+      "maxScore": 15,
+      "comment": "<ルーブリックのどの基準に照合してこのスコアになったか、具体的に記述>"
     }
   ],
   "topImprovements": [
-    "<最も効果的な改善提案1>",
-    "<最も効果的な改善提案2>",
-    "<最も効果的な改善提案3>"
+    {
+      "title": "<改善ポイントの見出し>",
+      "current": "<現状の問題点を具体的に指摘>",
+      "action": "<具体的な改善アクション。何をどう変えるか手順レベルで書く>",
+      "reason": "<なぜこの改善が効くのか、ルーブリックの業界ベンチマークを根拠に記述>"
+    },
+    {
+      "title": "...",
+      "current": "...",
+      "action": "...",
+      "reason": "..."
+    },
+    {
+      "title": "...",
+      "current": "...",
+      "action": "...",
+      "reason": "..."
+    }
   ]
 }
 
@@ -97,6 +97,8 @@ const EVALUATION_PROMPT = `あなたはLP（ランディングページ）専門
 - スクリーンショットが複数ある場合は、LP全体として評価してください
 - 甘い評価はしないでください。プロの目線で厳しく、しかし建設的に評価してください
 - 改善提案は「〜した方がいい」ではなく「〜に変更する」のように具体的なアクションで記述してください
+- topImprovementsは、読んだ人が「これなら今すぐ直せる」と思えるレベルの具体性で書いてください
+- topImprovementsのreasonには、ルーブリック内の業界ベンチマーク数値を引用してください
 - スクリーンショットから読み取れない部分は、その旨を明記した上で推測で評価してください`
 
 export interface DiagnosisResult {
@@ -108,7 +110,12 @@ export interface DiagnosisResult {
     maxScore: number
     comment: string
   }[]
-  topImprovements: string[]
+  topImprovements: {
+    title: string
+    current: string
+    action: string
+    reason: string
+  }[]
 }
 
 export async function diagnoseLP(
@@ -134,12 +141,13 @@ export async function diagnoseLP(
     body: JSON.stringify({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 4096,
+      system: SYSTEM_PROMPT,
       messages: [
         {
           role: 'user',
           content: [
             ...imageContent,
-            { type: 'text', text: EVALUATION_PROMPT },
+            { type: 'text', text: USER_PROMPT },
           ],
         },
       ],
